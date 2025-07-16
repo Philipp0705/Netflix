@@ -46,13 +46,15 @@ export default function Website() {
     const [serie, setSerie] = useState("")
     const [kategorie, setKategorie] = useState("")
 
-    // Variablen für den Filter
+    //Variablen für den Filter
     const [enableFilter, setEnableFilter] = useState(false)
     const [filterSerie, setFilterSerie] = useState("")
     const [filterKategorie, setFilterKategorie] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
     const [filterFavorit, setFilterFavorit] = useState(false)
     const [filterSterne, setFilterSterne] = useState(0)
+
+    
 
     useEffect(() => {
         if (loggedIn) {
@@ -115,7 +117,7 @@ export default function Website() {
                                 <Fab size="small" variant="extended" onClick={() => {
                                     setPanel("register")
                                     setPassword("")
-                                    }}>Registrieren</Fab>
+                                }}>Registrieren</Fab>
                             </Box>
                         </>
                     ) : (
@@ -208,7 +210,7 @@ export default function Website() {
                                         setSerie("")
                                         setKategorie("")
                                         if (data) setListe(data)
-                                        })
+                                    })
                             }}><AddIcon /></Fab>
                         </Box>
                     </>
@@ -234,14 +236,21 @@ export default function Website() {
                                     <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
                                     <Fab variant="extended">
                                         <Box sx={{ '& > :not(style)': { m: 0.35 } }}>
-                                        <Fab size="small" onClick={() => {filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1)}}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                        <Fab size="small" onClick={() => {filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2)}}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                        <Fab size="small" onClick={() => {filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3)}}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                        <Fab size="small" onClick={() => {filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4)}}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                        <Fab size="small" onClick={() => {filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5)}}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 1 ? "yellow" : "default"}} onClick={() => { filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1) }}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 2 ? "yellow" : "default"}} onClick={() => { filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2) }}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 3 ? "yellow" : "default"}} onClick={() => { filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3) }}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 4 ? "yellow" : "default"}} onClick={() => { filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4) }}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 5 ? "yellow" : "default"}} onClick={() => { filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5) }}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
                                         </Box>
                                     </Fab>
                                     <Fab sx={{ backgroundColor: filterFavorit ? "red" : "default" }} onClick={() => { filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true) }}>{filterFavorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}</Fab>
+                                    <br /><br />
+                                    <b>Aktuelle Filter:&nbsp;</b> <br />
+                                    {filterSerie !== "" ? "-> Serie enthält: " + filterSerie : ""}{filterSerie !== "" ? <br /> : ""}
+                                    {filterKategorie !== "" ? "-> Kategorie enthält: " + filterKategorie : ""}{filterKategorie !== "" ? <br /> : ""}
+                                    {filterStatus === "unwatched" ? "-> Status: Nicht Geschaut" : filterStatus === "watched" ? "-> Status: Geschaut" : ""}{filterStatus !== "" ? <br /> : ""}
+                                    {filterSterne > 1 ? "-> Bewertet mit  " + filterSterne + " Sternen" : filterSterne === 1 ? "-> Bewertet mit 1 Stern" : ""}{filterKategorie !== "" ? <br /> : ""}
+                                    {filterFavorit ? " -> Nur Favoriten" : ""}{filterKategorie !== "" ? <br /> : ""}
                                 </>
                                 : ""}
                         </Box>
@@ -265,7 +274,7 @@ export default function Website() {
                                 <tbody>
                                     {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).filter(item => filterSterne !== 0 ? item.sterne === filterSterne : true).map((item, index) => (
                                         <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white" }}>
-                                            <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Favorit*/}
                                                 <Fab sx={{ backgroundColor: item.favorit ? "red" : "default" }} onClick={() => {
                                                     fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/favorit/0`, {
                                                         method: 'PUT',
@@ -284,11 +293,11 @@ export default function Website() {
                                                     {item.favorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                                                 </Fab>
                                             </td>
-                                            <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.serie}</td>
-                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.kategorie}</td>
-                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.serie}</td> {/* Serie*/}
+                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.kategorie}</td> {/* Kategorie*/}
+                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Sterne (Bewertung)*/}
                                                 <Box sx={{ '& > :not(style)': { m: 0.25 } }}>
-                                                    <Fab size="small" onClick={() => {
+                                                    <Fab sx={{backgroundColor: item.sterne >= 1 ? "yellow" : "default"}} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/1`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -304,7 +313,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab size="small" onClick={() => {
+                                                    <Fab sx={{backgroundColor: item.sterne >= 2 ? "yellow" : "default"}} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/2`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -320,7 +329,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab size="small" onClick={() => {
+                                                    <Fab sx={{backgroundColor: item.sterne >= 3 ? "yellow" : "default"}} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/3`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -336,7 +345,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab size="small" onClick={() => {
+                                                    <Fab sx={{backgroundColor: item.sterne >= 4 ? "yellow" : "default"}} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/4`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -352,7 +361,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab size="small" onClick={() => {
+                                                    <Fab sx={{backgroundColor: item.sterne >= 5 ? "yellow" : "default"}} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/5`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -369,7 +378,7 @@ export default function Website() {
                                                     }}>{item.sterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
                                                 </Box>
                                             </td>
-                                            <td style={{ width: "10%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <td style={{ width: "10%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Status*/}
                                                 <Fab sx={{ backgroundColor: item.status === "watched" ? "lime" : "default" }} variant="extended" onClick={() => {
                                                     fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/status/0`, {
                                                         method: 'PUT',
@@ -388,7 +397,7 @@ export default function Website() {
                                                     {item.status === "watched" ? "Geschaut" : "Nicht Geschaut"}
                                                 </Fab>
                                             </td>
-                                            <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Löschen*/}
                                                 <Fab sx={{ backgroundColor: "red" }} onClick={() => {
                                                     fetch(`${backend}/users/${loggedInUser}/items/${item.id}/delete`, {
                                                         method: 'DELETE',
