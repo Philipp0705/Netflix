@@ -52,6 +52,7 @@ export default function Website() {
     const [filterKategorie, setFilterKategorie] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
     const [filterFavorit, setFilterFavorit] = useState(false)
+    const [filterSterne, setFilterSterne] = useState(0)
 
     useEffect(() => {
         if (loggedIn) {
@@ -91,6 +92,7 @@ export default function Website() {
                                             const data = await res.json()
                                             if (!res.ok) {
                                                 alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                setPassword("")
                                                 return null
                                             }
                                             return data
@@ -109,7 +111,10 @@ export default function Website() {
                                 }}><CheckIcon /></Fab>
                                 <br /><br /><br /><br /><br />
                                 Noch kein Account vorhanden?
-                                <Fab size="small" variant="extended" onClick={() => setPanel("register")}>Registrieren</Fab>
+                                <Fab size="small" variant="extended" onClick={() => {
+                                    setPanel("register")
+                                    setPassword("")
+                                    }}>Registrieren</Fab>
                             </Box>
                         </>
                     ) : (
@@ -133,12 +138,17 @@ export default function Website() {
                                             const data = await res.json()
                                             if (!res.ok) {
                                                 alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                setRepeatPassword("")
                                                 return null
                                             }
                                             return data
                                         })
                                         .then(data => {
                                             if (data) {
+                                                setPanel("login")
+                                                setEmail("")
+                                                setPassword("")
+                                                setRepeatPassword("")
                                                 if (data.message) {
                                                     alert(data.message);
                                                 }
@@ -147,7 +157,12 @@ export default function Website() {
                                 }}><CheckIcon /></Fab>
                                 <br /><br /><br /><br /><br />
                                 Du hast bereits einen Account?
-                                <Fab size="small" variant="extended" onClick={() => setPanel("login")}>Anmelden</Fab>
+                                <Fab size="small" variant="extended" onClick={() => {
+                                    setPanel("login")
+                                    setEmail("")
+                                    setPassword("")
+                                    setRepeatPassword("")
+                                }}>Anmelden</Fab>
                             </Box>
                         </>
                     )}
@@ -188,7 +203,11 @@ export default function Website() {
                                         }
                                         return data
                                     })
-                                    .then(data => { if (data) setListe(data) })
+                                    .then(data => {
+                                        setSerie("")
+                                        setKategorie("")
+                                        if (data) setListe(data)
+                                        })
                             }}><AddIcon /></Fab>
                         </Box>
                     </>
@@ -204,6 +223,7 @@ export default function Website() {
                                     setFilterKategorie("")
                                     setFilterStatus("")
                                     setFilterFavorit(false)
+                                    setFilterSterne(0)
                                 } else setEnableFilter(true)
                             }}>{enableFilter ? <FilterAltIcon /> : <FilterAltOffIcon />}</Fab>
                             {enableFilter ?
@@ -211,6 +231,15 @@ export default function Website() {
                                     <TextField variant="outlined" type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)} />
                                     <TextField variant="outlined" type="text" placeholder="Filter nach Kategorie" value={filterKategorie} onChange={(e) => setFilterKategorie(e.target.value)} />
                                     <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
+                                    <Fab variant="extended">
+                                        <Box sx={{ '& > :not(style)': { m: 0.35 } }}>
+                                        <Fab size="small" onClick={() => {filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1)}}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                        <Fab size="small" onClick={() => {filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2)}}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                        <Fab size="small" onClick={() => {filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3)}}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                        <Fab size="small" onClick={() => {filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4)}}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                        <Fab size="small" onClick={() => {filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5)}}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                        </Box>
+                                    </Fab>
                                     <Fab sx={{ backgroundColor: filterFavorit ? "red" : "default" }} onClick={() => { filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true) }}>{filterFavorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}</Fab>
                                 </>
                                 : ""}
@@ -233,7 +262,7 @@ export default function Website() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).map((item, index) => (
+                                    {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).filter(item => filterSterne !== 0 ? item.sterne === filterSterne : true).map((item, index) => (
                                         <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white" }}>
                                             <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
                                                 <Fab sx={{ backgroundColor: item.favorit ? "red" : "default" }} onClick={() => {
