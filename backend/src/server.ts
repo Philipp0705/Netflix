@@ -146,7 +146,10 @@ app.put('/users/:user/items/:id/update/:what/:sterne', (req, res) => {
 
     const updatedSerie = what === "favorit" ? {...selectedSerie, favorit: selectedSerie.favorit ? false : true} : //Update Favorit
     what === "status" ? {...selectedSerie, status: selectedSerie.status === "watched" ? "unwatched" : "watched"} : //Update Status
-    {...selectedSerie, sterne: selectedSerie.sterne === sterne ? 0 : sterne} //Update Sterne
+    what === "sterne" ? {...selectedSerie, sterne: selectedSerie.sterne === sterne ? 0 : sterne} : //Update Sterne
+    what === "serie" ? {...selectedSerie, serie: `${req.body.text}`} : //Update Serie
+    what === "kategorie" ? {...selectedSerie, kategorie: `${req.body.text}`} : //Update Kategorie
+    selectedSerie
 
     userListe[serieIndex] = updatedSerie
     accounts[accountIndex].liste = userListe

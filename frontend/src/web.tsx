@@ -13,6 +13,8 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
+import EditIcon from '@mui/icons-material/Edit';
+
 
 interface serie {
     serie: string,
@@ -20,6 +22,11 @@ interface serie {
     kategorie: string,
     sterne: number,
     favorit: boolean,
+    id: number,
+}
+
+interface update {
+    text: string,
     id: number,
 }
 
@@ -45,6 +52,8 @@ export default function Website() {
     const [liste, setListe] = useState<serie[]>([])
     const [serie, setSerie] = useState("")
     const [kategorie, setKategorie] = useState("")
+    const [updateSerie, setUpdateSerie] = useState<update[]>([])
+    const [updateKategorie, setUpdateKategorie] = useState<update[]>([])
 
     //Variablen für den Filter
     const [enableFilter, setEnableFilter] = useState(false)
@@ -54,7 +63,7 @@ export default function Website() {
     const [filterFavorit, setFilterFavorit] = useState(false)
     const [filterSterne, setFilterSterne] = useState(0)
 
-    
+
 
     useEffect(() => {
         if (loggedIn) {
@@ -236,11 +245,11 @@ export default function Website() {
                                     <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
                                     <Fab variant="extended">
                                         <Box sx={{ '& > :not(style)': { m: 0.35 } }}>
-                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 1 ? "yellow" : "default"}} onClick={() => { filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1) }}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 2 ? "yellow" : "default"}} onClick={() => { filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2) }}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 3 ? "yellow" : "default"}} onClick={() => { filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3) }}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 4 ? "yellow" : "default"}} onClick={() => { filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4) }}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{backgroundColor: filterSterne >= 5 ? "yellow" : "default"}} onClick={() => { filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5) }}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 1 ? "yellow" : "default" }} onClick={() => { filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1) }}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 2 ? "yellow" : "default" }} onClick={() => { filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2) }}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 3 ? "yellow" : "default" }} onClick={() => { filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3) }}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 4 ? "yellow" : "default" }} onClick={() => { filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4) }}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 5 ? "yellow" : "default" }} onClick={() => { filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5) }}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
                                         </Box>
                                     </Fab>
                                     <Fab sx={{ backgroundColor: filterFavorit ? "red" : "default" }} onClick={() => { filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true) }}>{filterFavorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}</Fab>
@@ -293,11 +302,87 @@ export default function Website() {
                                                     {item.favorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                                                 </Fab>
                                             </td>
-                                            <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.serie}</td> {/* Serie*/}
-                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.kategorie}</td> {/* Kategorie*/}
+                                            <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Serie*/}
+                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                                                    <div style={{ flex: 1, textAlign: "center" }}>
+                                                        {updateSerie.findIndex(data => data.id === item.id) === -1 ? item.serie :
+                                                            <TextField type="text" value={updateSerie.find(data => data.id === item.id)?.text} onChange={(e) => {
+                                                                setUpdateSerie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
+                                                            }} />}
+                                                    </div>
+                                                    <Fab size="small" onClick={() => {
+                                                        const findUpdate = updateSerie.findIndex(data => data.id === item.id)
+                                                        if (findUpdate === -1) {
+                                                            const neuesUpdate = { text: item.serie, id: item.id }
+                                                            setUpdateSerie([...updateSerie, neuesUpdate])
+                                                            console.log("Update created!")
+                                                        } else if (findUpdate !== -1) {
+                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/serie/0`, {
+                                                                method: 'PUT',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ text: updateSerie[findUpdate].text })
+                                                            })
+                                                                .then(async res => {
+                                                                    const data = await res.json()
+                                                                    if (!res.ok) {
+                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                        return null
+                                                                    }
+                                                                    return data
+                                                                })
+                                                                .then(data => {
+                                                                    if (data) {
+                                                                        setUpdateSerie(prev => prev.filter(got => got.id !== item.id))
+                                                                        setListe(prev => prev.map(got => got.id === item.id ? { ...got, serie: updateSerie[findUpdate].text } : got))
+                                                                    }
+                                                                })
+                                                            console.log("Update found!")
+                                                        }
+                                                    }}>{updateSerie.findIndex(data => data.id === item.id) === -1 ? <EditIcon /> : <CheckIcon />}</Fab>
+                                                </div>
+                                            </td>
+                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Kategorie*/}
+                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                                                    <div style={{ flex: 1, textAlign: "center" }}>
+                                                        {updateKategorie.findIndex(data => data.id === item.id) === -1 ? item.kategorie :
+                                                            <TextField type="text" value={updateKategorie.find(data => data.id === item.id)?.text} onChange={(e) => {
+                                                                setUpdateKategorie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
+                                                            }} />}
+                                                    </div>
+                                                    <Fab size="small" onClick={() => {
+                                                        const findUpdate = updateKategorie.findIndex(data => data.id === item.id)
+                                                        if (findUpdate === -1) {
+                                                            const neuesUpdate = { text: item.kategorie, id: item.id }
+                                                            setUpdateKategorie([...updateKategorie, neuesUpdate])
+                                                            console.log("Update created!")
+                                                        } else if (findUpdate !== -1) {
+                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/kategorie/0`, {
+                                                                method: 'PUT',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ text: updateKategorie[findUpdate].text })
+                                                            })
+                                                                .then(async res => {
+                                                                    const data = await res.json()
+                                                                    if (!res.ok) {
+                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                        return null
+                                                                    }
+                                                                    return data
+                                                                })
+                                                                .then(data => {
+                                                                    if (data) {
+                                                                        setUpdateKategorie(prev => prev.filter(got => got.id !== item.id))
+                                                                        setListe(prev => prev.map(got => got.id === item.id ? { ...got, kategorie: updateKategorie[findUpdate].text } : got))
+                                                                    }
+                                                                })
+                                                            console.log("Update found!")
+                                                        }
+                                                    }}>{updateKategorie.findIndex(data => data.id === item.id) === -1 ? <EditIcon /> : <CheckIcon />}</Fab>
+                                                </div>
+                                            </td> {/* Kategorie*/}
                                             <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Sterne (Bewertung)*/}
                                                 <Box sx={{ '& > :not(style)': { m: 0.25 } }}>
-                                                    <Fab sx={{backgroundColor: item.sterne >= 1 ? "yellow" : "default"}} size="small" onClick={() => {
+                                                    <Fab sx={{ backgroundColor: item.sterne >= 1 ? "yellow" : "default" }} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/1`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -313,7 +398,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab sx={{backgroundColor: item.sterne >= 2 ? "yellow" : "default"}} size="small" onClick={() => {
+                                                    <Fab sx={{ backgroundColor: item.sterne >= 2 ? "yellow" : "default" }} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/2`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -329,7 +414,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab sx={{backgroundColor: item.sterne >= 3 ? "yellow" : "default"}} size="small" onClick={() => {
+                                                    <Fab sx={{ backgroundColor: item.sterne >= 3 ? "yellow" : "default" }} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/3`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -345,7 +430,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab sx={{backgroundColor: item.sterne >= 4 ? "yellow" : "default"}} size="small" onClick={() => {
+                                                    <Fab sx={{ backgroundColor: item.sterne >= 4 ? "yellow" : "default" }} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/4`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
@@ -361,7 +446,7 @@ export default function Website() {
                                                             .then(data => { if (data) setListe(data) })
                                                     }}>{item.sterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
 
-                                                    <Fab sx={{backgroundColor: item.sterne >= 5 ? "yellow" : "default"}} size="small" onClick={() => {
+                                                    <Fab sx={{ backgroundColor: item.sterne >= 5 ? "yellow" : "default" }} size="small" onClick={() => {
                                                         fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/5`, {
                                                             method: 'PUT',
                                                             headers: { 'Content-Type': 'application/json' },
