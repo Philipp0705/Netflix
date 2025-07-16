@@ -8,6 +8,7 @@ interface liste {
     serie: string,
     status: string,
     kategorie: string,
+    sterne: number,
     favorit: boolean,
     id: number,
 }
@@ -140,28 +141,34 @@ app.post('/users/:user/items', (req, res) => {
 
     if (accountIndex === -1) {
         console.log("Es wurde kein Account gefunden")
-        return res.status(404).json({ message: "Es wurde kein Account gefunden" })
+        return res.status(400).json({ message: "Es wurde kein Account gefunden" })
     }
 
     const userListe = accounts[accountIndex].liste
 
+    if (serie.trim() === "") {
+        console.log("Serienname ist nicht gültig")
+        return res.status(400).json({ message: "Serienname ist nicht gültig" })
+    }
+
     if (userListe.find(item => item.serie === serie)) {
         console.log("Serie existiert bereits")
-        return res.status(404).json({ message: "Serie existiert bereits" })
+        return res.status(400).json({ message: "Serie existiert bereits" })
     }
 
     const newId = userListe.length > 0 ? Math.max(...userListe.map(item => item.id)) + 1 : 1
-    const newSerie = { serie: serie, status: "unwatched", kategorie: kategorie, favorit: false, id: newId }
+    const newSerie = { serie, status: "unwatched", kategorie, favorit: false, id: newId, sterne: 0 }
     accounts[accountIndex].liste.push(newSerie)
 
     console.log(user, " => Neue Serie added: ", newSerie)
-    return res.json(newSerie)
+    return res.json(accounts[accountIndex].liste)
 })
 
-app.put('/users/:user/items/:id/update/:what', (req, res) => {
+app.put('/users/:user/items/:id/update/:what/:sterne', (req, res) => {
     const user = req.params.user
     const id = Number(req.params.id)
     const what = req.params.what
+    const sterne = Number(req.params.sterne)
 
     const accountIndex = accounts.findIndex(item => item.username === user)
 
@@ -180,7 +187,9 @@ app.put('/users/:user/items/:id/update/:what', (req, res) => {
 
     const selectedSerie = userListe[serieIndex]
 
-    const updatedSerie = what === "favorit" ? {...selectedSerie, favorit: selectedSerie.favorit ? false : true} : {...selectedSerie, status: selectedSerie.status === "watched" ? "unwatched" : "watched"}
+    const updatedSerie = what === "favorit" ? {...selectedSerie, favorit: selectedSerie.favorit ? false : true} : //Update Favorit
+    what === "status" ? {...selectedSerie, status: selectedSerie.status === "watched" ? "unwatched" : "watched"} : //Update Status
+    {...selectedSerie, sterne: selectedSerie.sterne === sterne ? 0 : sterne} //Update Sterne
 
     userListe[serieIndex] = updatedSerie
     accounts[accountIndex].liste = userListe
