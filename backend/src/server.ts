@@ -21,50 +21,7 @@ interface user {
     liste: liste[]
 }
 
-
 const accounts: user[] = []
-
-{/* TEST ACCOUNTS
-const accounts: user[] = [
-    {
-        id: 1,
-        username: "maxmustermann",
-        email: "max@example.com",
-        password: "passwort123",
-        liste: [
-            {
-                id: 1,
-                serie: "Breaking Bad",
-                status: "watched",
-                kategorie: "Drama",
-                favorit: "yes"
-            },
-            {
-                id: 2,
-                serie: "Stranger Things",
-                status: "unwatched",
-                kategorie: "Mystery",
-                favorit: "no"
-            }
-        ]
-    },
-    {
-        id: 2,
-        username: "sarahschmidt",
-        email: "sarah@example.com",
-        password: "meinpasswort",
-        liste: [
-            {
-                id: 1,
-                serie: "The Office",
-                status: "watched",
-                kategorie: "Comedy",
-                favorit: "yes"
-            }
-        ]
-    }
-];
-*/}
 
 app.use(cors())
 app.use(express.json())

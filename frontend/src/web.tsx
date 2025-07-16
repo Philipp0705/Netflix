@@ -67,7 +67,7 @@ export default function Website() {
                 })
                 .then(data => { if (data) setListe(data) })
         }
-    }, [loggedInUser, backend])
+    }, [loggedInUser, backend, loggedIn])
 
     return (
         <div>
@@ -101,6 +101,7 @@ export default function Website() {
                                             if (data) {
                                                 setListe([])
                                                 setLoggedIn(data.status)
+                                                setEnableFilter(false)
                                                 setLoggedInUser(data.user)
                                                 if (data.message) {
                                                     alert(data.message);
