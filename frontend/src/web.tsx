@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react'
 
+import Fab from '@mui/material/Fab';
+import CheckIcon from '@mui/icons-material/Check';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import LogoutIcon from '@mui/icons-material/Logout';
+import AddIcon from '@mui/icons-material/Add';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+
 interface serie {
     serie: string,
     status: string,
@@ -16,6 +29,9 @@ export default function Website() {
     const [panel, setPanel] = useState("login")
     const [loggedIn, setLoggedIn] = useState(false)
     const [loggedInUser, setLoggedInUser] = useState("")
+
+    //Variablen für das Nutzer Menü
+    const [userMenu, setUserMenu] = useState(false)
 
     //Variablen für das Login / Register
     const [username, setUsername] = useState("")
@@ -47,125 +63,143 @@ export default function Website() {
         <div>
             {!loggedIn ? (
                 <> {/* Login / Register */}
-                    {panel === "login" ? "Noch kein Account vorhanden? " : "Du hast bereits einen Account? "}
-
-                    <button onClick={() => { //Switch Panel
-                        panel === "login" ? setPanel("register") : setPanel("login")
-                    }}>{panel === "login" ? "Register" : "Login"}</button>
                     {panel === "login" ? (
                         <> {/* Login Panel */}
-                            <h1>Login</h1>
-                            <input type="text" placeholder="Benutzername" value={username} onChange={(e) => setUsername(e.target.value)} />
-                            <input type="text" placeholder="Passwort" value={password} onChange={(e) => setPassword(e.target.value)} />
-
-                            <button onClick={() => { //Login Button
-                                const loginData = { username, password }
-                                fetch(`${backend}/login`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(loginData)
-                                })
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        setListe([])
-                                        setLoggedIn(data.status)
-                                        setLoggedInUser(data.user)
-                                        if (data.message) {
-                                            alert(data.message);
-                                        }
+                            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', '& > :not(style)': { m: 1 } }}>
+                                <h1>Login</h1>
+                                <br /><br /><br />
+                                <TextField label="Benutzername" variant="outlined" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                                <TextField label="Passwort" variant="outlined" type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <br />
+                                <Fab sx={{ backgroundColor: "lime" }} onClick={() => { //Login Button
+                                    const loginData = { username, password }
+                                    fetch(`${backend}/login`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(loginData)
                                     })
-                            }}>Login</button>
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            setListe([])
+                                            setLoggedIn(data.status)
+                                            setLoggedInUser(data.user)
+                                            if (data.message) {
+                                                alert(data.message);
+                                            }
+                                        })
+                                }}><CheckIcon /></Fab>
+                                <br /><br /><br /><br /><br />
+                                Noch kein Account vorhanden?
+                                <Fab size="small" variant="extended" onClick={() => setPanel("register")}>Registrieren</Fab>
+                            </Box>
                         </>
                     ) : (
                         <> {/* Register Panel */}
-                            <h1>Register</h1>
-                            <input type="text" placeholder="Benutzername" value={username} onChange={(e) => setUsername(e.target.value)} />
-                            <input type="text" placeholder="E-Mail" value={email} onChange={(e) => setEmail(e.target.value)} />
-                            <input type="text" placeholder="Passwort" value={password} onChange={(e) => setPassword(e.target.value)} />
-                            <input type="text" placeholder="Passwort wiederholen" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} />
-
-                            <button onClick={() => { //Register Button
-                                const registerData = { username, email, password, repeatPassword }
-                                fetch(`${backend}/register`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(registerData)
-                                })
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        if (data.message) {
-                                            alert(data.message);
-                                        }
+                            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', '& > :not(style)': { m: 1 } }}>
+                                <h1>Register</h1>
+                                <br /><br /><br />
+                                <TextField label="Benutzername" variant="outlined" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                                <TextField label="E-Mail" variant="outlined" type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                                <TextField label="Passwort" variant="outlined" type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <TextField label="Passwort wiederholen" variant="outlined" type="text" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} />
+                                <br />
+                                <Fab sx={{ backgroundColor: "lime" }} onClick={() => { //Register Button
+                                    const registerData = { username, email, password, repeatPassword }
+                                    fetch(`${backend}/register`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(registerData)
                                     })
-                            }}>Register</button>
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.message) {
+                                                alert(data.message);
+                                            }
+                                        })
+                                }}><CheckIcon /></Fab>
+                                <br /><br /><br /><br /><br />
+                                Du hast bereits einen Account?
+                                <Fab size="small" variant="extended" onClick={() => setPanel("login")}>Anmelden</Fab>
+                            </Box>
                         </>
                     )}
                 </>
             ) : (
                 <> {/* Netflix Liste */}
-                    <h1>Aktuell angemeldet: {loggedInUser}</h1>
-                    <button onClick={() => {
-                        setLoggedInUser("")
-                        setLoggedIn(false)
-                    }}>Logout</button>
-                    <br /><br /><br />
+                    <> {/* Benutzer Menü */}
+                        <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                            <Fab variant="extended" onClick={() => { userMenu ? setUserMenu(false) : setUserMenu(true) }}><b>{loggedInUser}</b></Fab>
+                            {userMenu ?
+                                <><Fab size="small" sx={{ backgroundColor: "red" }} onClick={() => {
+                                    setLoggedInUser("")
+                                    setLoggedIn(false)
+                                }}><LogoutIcon /></Fab>
+                                </>
+                                : ""}
+                        </Box>
+                        <br /><br /><br />
+                    </>
 
                     <> {/* Serie hinzufügen */}
-                        <input type="text" placeholder="Name der Serie" value={serie} onChange={(e) => setSerie(e.target.value)} />
-                        <input type="text" placeholder="Kategorie (optional)" value={kategorie} onChange={(e) => setKategorie(e.target.value)} />
+                        <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                            <TextField label="Name der Serie" variant="outlined" type="text" value={serie} onChange={(e) => setSerie(e.target.value)} />
+                            <TextField label="Kategorie (optional)" variant="outlined" type="text" value={kategorie} onChange={(e) => setKategorie(e.target.value)} />
 
-                        <button onClick={() => {
-                            const newUser = { serie, kategorie }
-                            fetch(`${backend}/users/${loggedInUser}/items`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(newUser)
-                            })
-                                .then(res => res.json())
-                                .then(data => setListe([...liste, data]))
-                        }}>Serie hinzufügen</button>
+                            <Fab sx={{ backgroundColor: "lime" }} onClick={() => {
+                                const newUser = { serie, kategorie }
+                                fetch(`${backend}/users/${loggedInUser}/items`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(newUser)
+                                })
+                                    .then(res => res.json())
+                                    .then(data => setListe([...liste, data]))
+                            }}><AddIcon /></Fab>
+                        </Box>
                     </>
 
                     <br /><br /><br />
 
                     <> {/* Filter */}
-                        <button onClick={() => {
-                            if (enableFilter) {
-                                setEnableFilter(false)
-                                setFilterSerie("")
-                                setFilterKategorie("")
-                                setFilterStatus("")
-                                setFilterFavorit(false)
-                            } else setEnableFilter(true)
-                        }}>Filter</button>
-                        {enableFilter ? 
-                            <>
-                            <input type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)}/>
-                            <input type="text" placeholder="Filter nach Kategorie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)}/>
-                            <button onClick={() => {filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched")}}>{filterStatus === "" ? "Alle Serie" : filterStatus === "unwatched" ? "Offene Serien" : "Geschaute Serien"}</button>
-                            <button onClick={() => {filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true)}}>{filterFavorit ? "Favoriten" : "Alle"}</button>
-                            </>
-                         : ""}
+                        <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                            <Fab onClick={() => {
+                                if (enableFilter) {
+                                    setEnableFilter(false)
+                                    setFilterSerie("")
+                                    setFilterKategorie("")
+                                    setFilterStatus("")
+                                    setFilterFavorit(false)
+                                } else setEnableFilter(true)
+                            }}>{enableFilter ? <FilterAltIcon /> : <FilterAltOffIcon />}</Fab>
+                            {enableFilter ?
+                                <>
+                                    <TextField variant="outlined" type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)} />
+                                    <TextField variant="outlined" type="text" placeholder="Filter nach Kategorie" value={filterKategorie} onChange={(e) => setFilterKategorie(e.target.value)} />
+                                    <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
+                                    <Fab sx={{ backgroundColor: filterFavorit ? "red" : "default" }} onClick={() => { filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true) }}>{filterFavorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}</Fab>
+                                </>
+                                : ""}
+                        </Box>
                     </>
 
                     <br /><br /><br />
 
                     <> {/* Liste der Serien */}
-                        <table>
+                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
                             <thead>
-                                <tr>
-                                    <td>Favorit</td>
-                                    <td>Name der Serie</td>
-                                    <td>Kategorie</td>
-                                    <td>Status</td>
-                                    <td>Löschen</td>
+                                <tr style={{ backgroundColor: "#dac5c5ff", textAlign: "center", padding: "8px", border: '2px solid black' }}>
+                                    <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Favorit</td>
+                                    <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Name der Serie</td>
+                                    <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Kategorie</td>
+                                    <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Status</td>
+                                    <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Löschen</td>
                                 </tr>
                             </thead>
                             <tbody>
-                                {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).map(item => (
-                                    <tr key={item.id}>
-                                        <td>
-                                            <button onClick={() => {
+                                {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).map((item, index) => (
+                                    <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white" }}>
+                                        <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <Fab sx={{ backgroundColor: item.favorit ? "red" : "default" }} onClick={() => {
                                                 fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/favorit`, {
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
@@ -173,13 +207,13 @@ export default function Website() {
                                                     .then(res => res.json())
                                                     .then(data => setListe(data))
                                             }}>
-                                                {item.favorit ? "X" : "0"}
-                                            </button>
+                                                {item.favorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                            </Fab>
                                         </td>
-                                        <td>{item.serie}</td>
-                                        <td>{item.kategorie}</td>
-                                        <td>
-                                            <button onClick={() => {
+                                        <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.serie}</td>
+                                        <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}>{item.kategorie}</td>
+                                        <td style={{ width: "10%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <Fab sx={{ backgroundColor: item.status === "watched" ? "lime" : "default" }} variant="extended" onClick={() => {
                                                 fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/status`, {
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
@@ -187,11 +221,11 @@ export default function Website() {
                                                     .then(res => res.json())
                                                     .then(data => setListe(data))
                                             }}>
-                                                {item.status === "watched" ? "Geschaut" : "Noch offen"}
-                                            </button>
+                                                {item.status === "watched" ? "Geschaut" : "Nicht Geschaut"}
+                                            </Fab>
                                         </td>
-                                        <td>
-                                            <button onClick={() => {
+                                        <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}>
+                                            <Fab sx={{ backgroundColor: "red" }} onClick={() => {
                                                 fetch(`${backend}/users/${loggedInUser}/items/${item.id}/delete`, {
                                                     method: 'DELETE',
                                                     headers: { 'Content-Type': 'application/json' },
@@ -199,8 +233,8 @@ export default function Website() {
                                                     .then(res => res.json())
                                                     .then(data => setListe(data))
                                             }}>
-                                                Löschen
-                                            </button>
+                                                <DeleteIcon />
+                                            </Fab>
                                         </td>
                                     </tr>
                                 ))}
