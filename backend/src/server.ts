@@ -144,12 +144,12 @@ app.put('/users/:user/items/:id/update/:what/:sterne', (req, res) => {
 
     const selectedSerie = userListe[serieIndex]
 
-    const updatedSerie = what === "favorit" ? {...selectedSerie, favorit: selectedSerie.favorit ? false : true} : //Update Favorit
-    what === "status" ? {...selectedSerie, status: selectedSerie.status === "watched" ? "unwatched" : "watched"} : //Update Status
-    what === "sterne" ? {...selectedSerie, sterne: selectedSerie.sterne === sterne ? 0 : sterne} : //Update Sterne
-    what === "serie" ? {...selectedSerie, serie: `${req.body.text}`} : //Update Serie
-    what === "kategorie" ? {...selectedSerie, kategorie: `${req.body.text}`} : //Update Kategorie
-    selectedSerie
+    const updatedSerie = what === "favorit" ? { ...selectedSerie, favorit: selectedSerie.favorit ? false : true } : //Update Favorit
+        what === "status" ? { ...selectedSerie, status: selectedSerie.status === "watched" ? "unwatched" : "watched" } : //Update Status
+            what === "sterne" ? { ...selectedSerie, sterne: selectedSerie.sterne === sterne ? 0 : sterne } : //Update Sterne
+                what === "serie" ? { ...selectedSerie, serie: `${req.body.text}` } : //Update Serie
+                    what === "kategorie" ? { ...selectedSerie, kategorie: `${req.body.text}` } : //Update Kategorie
+                        selectedSerie
 
     userListe[serieIndex] = updatedSerie
     accounts[accountIndex].liste = userListe
@@ -165,7 +165,7 @@ app.delete('/users/:user/items/:id/delete', (req, res) => {
 
     if (accountIndex === -1) {
         console.log("Es wurde kein Account gefunden")
-        return res.status(404).json({message:"Es wurde kein Account gefunden"})
+        return res.status(404).json({ message: "Es wurde kein Account gefunden" })
     }
 
     const userListe = accounts[accountIndex].liste
@@ -173,7 +173,7 @@ app.delete('/users/:user/items/:id/delete', (req, res) => {
 
     if (serieIndex === -1) {
         console.log("Es wurde keine Serie mit dieser ID gefunden")
-        return res.status(404).json({message:"Es wurde keine Serie mit dieser ID gefunden"})
+        return res.status(404).json({ message: "Es wurde keine Serie mit dieser ID gefunden" })
     }
 
     userListe.splice(serieIndex, 1)
@@ -182,13 +182,76 @@ app.delete('/users/:user/items/:id/delete', (req, res) => {
     return res.status(200).json(userListe)
 })
 
+app.get('/users/:user/email', (req, res) => {
+    const user = req.params.user
+
+    const findIndex = accounts.findIndex(item => item.username === user)
+    if (findIndex === -1) {
+        console.log("Es wurde kein Account gefunden!")
+        return res.status(404).json({ message: "Es wurde kein Account gefunden!" })
+    }
+
+    return res.status(200).json(accounts[findIndex].email)
+})
+
 app.put('/users/:user/edit/:what', (req, res) => {
     const user = req.params.user
     const what = req.params.what
+    const send = req.body.send
+    const { oldPassword, password, repeatPassword } = req.body
 
     if (what === "username") {
-        
+        const findExistingIndex = accounts.findIndex(data => data.username === user)
+        if (findExistingIndex === -1) {
+            console.log("Es wurde kein Account gefunden")
+            return res.status(404).json({ message: "Es wurde kein Account gefunden" })
+        }
+        console.log("Account found")
+        const findNewIndex = accounts.findIndex(data => data.username === send)
+        if (findNewIndex !== -1) {
+            console.log("Dieser Nutzername existiert bereits!")
+            return res.status(404).json({ message: "Dieser Nutzername existiert bereits!" })
+        }
+
+        accounts[findExistingIndex] = { ...accounts[findExistingIndex], username: send }
+
+        return res.status(200).json(send)
+
     } else if (what === "email") {
+
+        const findExistingIndex = accounts.findIndex(data => data.username === user)
+        if (findExistingIndex === -1) {
+            console.log("Es wurde kein Account gefunden")
+            return res.status(404).json({ message: "Es wurde kein Account gefunden" })
+        }
+        console.log("Account found")
+        const findNewIndex = accounts.findIndex(data => data.email === send)
+        if (findNewIndex !== -1) {
+            console.log("Dieser Nutzername existiert bereits")
+            return res.status(404).json({ message: "Diese E-Mail ist bereits in Benutzung!" })
+        }
+
+        accounts[findExistingIndex] = { ...accounts[findExistingIndex], email: send }
+
+        return res.status(200).json(send)
+
+    } else if (what === "password") {
+
+        const findExistingIndex = accounts.findIndex(data => data.username === user)
+        if (findExistingIndex === -1) {
+            console.log("Es wurde kein Account gefunden")
+            return res.status(404).json({ message: "Es wurde kein Account gefunden" })
+        }
+
+        if (accounts[findExistingIndex].password === oldPassword) {
+            if (password === repeatPassword) {
+                if (oldPassword !== password) {
+                    accounts[findExistingIndex] = { ...accounts[findExistingIndex], password: password }
+                    console.log("Passwort wurde erfolgreich geändert")
+                    return res.status(200).json({ message: "Passwort wurde erfolgreich geändert" })
+                } else return res.status(404).json({ message: "Das neue Passwort entspricht dem alten Passwort" })
+            } else return res.status(404).json({ message: "Die Passwörter stimmen nicht überein" })
+        } else return res.status(404).json({ message: "Das alte Passwort ist nicht korrekt" })
 
     }
 })

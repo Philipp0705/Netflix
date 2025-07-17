@@ -67,6 +67,9 @@ export default function Website() {
     const [edit, setEdit] = useState(false)
     const [enableEditUsername, setEnableEditUsername] = useState(false)
     const [editUsername, setEditUsername] = useState("")
+    const [enableEditEmail, setEnableEditEmail] = useState(false)
+    const [editEmail, setEditEmail] = useState("")
+    const [oldPassword, setOldPassword] = useState("")
 
     useEffect(() => {
         if (loggedIn) {
@@ -92,8 +95,8 @@ export default function Website() {
                             <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', '& > :not(style)': { m: 1 } }}>
                                 <h1>Login</h1>
                                 <br /><br /><br />
-                                <TextField label="Benutzername" variant="outlined" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-                                <TextField label="Passwort" variant="outlined" type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <TextField autoComplete="off" label="Benutzername" variant="outlined" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                                <TextField autoComplete="off" label="Passwort" variant="outlined" type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
                                 <br />
                                 <Fab sx={{ backgroundColor: "lime" }} onClick={() => { //Login Button
                                     const loginData = { username, password }
@@ -116,6 +119,15 @@ export default function Website() {
                                                 setListe([])
                                                 setLoggedIn(data.status)
                                                 setEnableFilter(false)
+                                                setFilterFavorit(false)
+                                                setFilterKategorie("")
+                                                setFilterSerie("")
+                                                setFilterSerie("")
+                                                setFilterSterne(0)
+                                                setPassword("")
+                                                setUsername("")
+                                                setRepeatPassword("")
+                                                setEmail("")
                                                 setLoggedInUser(data.user)
                                                 if (data.message) {
                                                     alert(data.message);
@@ -137,10 +149,10 @@ export default function Website() {
                             <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', '& > :not(style)': { m: 1 } }}>
                                 <h1>Register</h1>
                                 <br /><br /><br />
-                                <TextField label="Benutzername" variant="outlined" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-                                <TextField label="E-Mail" variant="outlined" type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
-                                <TextField label="Passwort" variant="outlined" type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
-                                <TextField label="Passwort wiederholen" variant="outlined" type="text" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} />
+                                <TextField autoComplete="off" label="Benutzername" variant="outlined" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                                <TextField autoComplete="off" label="E-Mail" variant="outlined" type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                                <TextField autoComplete="off" label="Passwort" variant="outlined" type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <TextField autoComplete="off" label="Passwort wiederholen" variant="outlined" type="text" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} />
                                 <br />
                                 <Fab sx={{ backgroundColor: "lime" }} onClick={() => { //Register Button
                                     const registerData = { username, email, password, repeatPassword }
@@ -195,6 +207,22 @@ export default function Website() {
                                                 setEdit(true)
                                                 setEnableEditUsername(false)
                                                 setEditUsername(loggedInUser)
+                                                setEnableEditEmail(false)
+                                                fetch(`${backend}/users/${loggedInUser}/email`)
+                                                    .then(async res => {
+                                                        const data = await res.json()
+                                                        if (!res.ok) {
+                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                            return null
+                                                        }
+                                                        return data
+                                                    })
+                                                    .then(data => {
+                                                        if (data) {
+                                                            setEditEmail(data)
+                                                        }
+                                                    })
+
                                             }}>
                                                 <EditIcon />
                                             </Fab>
@@ -210,8 +238,8 @@ export default function Website() {
 
                             <> {/* Serie hinzufügen */}
                                 <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                                    <TextField label="Name der Serie" variant="outlined" type="text" value={serie} onChange={(e) => setSerie(e.target.value)} />
-                                    <TextField label="Kategorie (optional)" variant="outlined" type="text" value={kategorie} onChange={(e) => setKategorie(e.target.value)} />
+                                    <TextField autoComplete="off" label="Name der Serie" variant="outlined" type="text" value={serie} onChange={(e) => setSerie(e.target.value)} />
+                                    <TextField autoComplete="off" label="Kategorie (optional)" variant="outlined" type="text" value={kategorie} onChange={(e) => setKategorie(e.target.value)} />
 
                                     <Fab sx={{ backgroundColor: "lime" }} onClick={() => {
                                         const newSerie = { serie, kategorie: kategorie.trim() === "" ? "" : kategorie }
@@ -253,8 +281,8 @@ export default function Website() {
                                     }}>{enableFilter ? <FilterAltIcon /> : <FilterAltOffIcon />}</Fab>
                                     {enableFilter ?
                                         <>
-                                            <TextField variant="outlined" type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)} />
-                                            <TextField variant="outlined" type="text" placeholder="Filter nach Kategorie" value={filterKategorie} onChange={(e) => setFilterKategorie(e.target.value)} />
+                                            <TextField autoComplete="off" variant="outlined" type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)} />
+                                            <TextField autoComplete="off" variant="outlined" type="text" placeholder="Filter nach Kategorie" value={filterKategorie} onChange={(e) => setFilterKategorie(e.target.value)} />
                                             <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
                                             <Fab variant="extended">
                                                 <Box sx={{ '& > :not(style)': { m: 0.35 } }}>
@@ -319,7 +347,7 @@ export default function Website() {
                                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                                                             <div style={{ flex: 1, textAlign: "center" }}>
                                                                 {updateSerie.findIndex(data => data.id === item.id) === -1 ? item.serie :
-                                                                    <TextField type="text" value={updateSerie.find(data => data.id === item.id)?.text} onChange={(e) => {
+                                                                    <TextField autoComplete="off" type="text" value={updateSerie.find(data => data.id === item.id)?.text} onChange={(e) => {
                                                                         setUpdateSerie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
                                                                     }} />}
                                                             </div>
@@ -358,7 +386,7 @@ export default function Website() {
                                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                                                             <div style={{ flex: 1, textAlign: "center" }}>
                                                                 {updateKategorie.findIndex(data => data.id === item.id) === -1 ? item.kategorie :
-                                                                    <TextField type="text" value={updateKategorie.find(data => data.id === item.id)?.text} onChange={(e) => {
+                                                                    <TextField autoComplete="off" type="text" value={updateKategorie.find(data => data.id === item.id)?.text} onChange={(e) => {
                                                                         setUpdateKategorie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
                                                                     }} />}
                                                             </div>
@@ -521,30 +549,127 @@ export default function Website() {
                                     : ""}
                             </>
                         </>
-                    ) : ( //Edit-Screen
-                        <>
+                    ) : (
+                        <> {/* Edit Page */}
                             <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', '& > :not(style)': { m: 1 } }}>
+                                <h1>Nutzerdaten</h1>
+                                <br />
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                    Change Username:
-                                    <TextField disabled={!enableEditUsername} value={editUsername} onChange={(e) => {
+                                    Change Username:
+                                    <TextField autoComplete="off" disabled={!enableEditUsername} value={editUsername} onChange={(e) => {
                                         setEditUsername(e.target.value)
-                                    }}/>
+                                    }} />
                                     <Fab onClick={() => {
                                         if (enableEditUsername) {
                                             setEnableEditUsername(false)
                                             fetch(`${backend}/users/${loggedInUser}/edit/username`, {
                                                 method: 'PUT',
                                                 headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify(setEditUsername)
+                                                body: JSON.stringify({ send: editUsername })
                                             })
+                                                .then(async res => {
+                                                    const data = await res.json()
+                                                    if (!res.ok) {
+                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                        setEditUsername(loggedInUser)
+                                                        return null
+                                                    }
+                                                    return data
+                                                })
+                                                .then(data => {
+                                                    if (data) {
+                                                        console.log(data)
+                                                        setLoggedInUser(data)
+                                                        alert("Username wurde erfolgreich geändert!")
+                                                    }
+                                                })
                                         } else setEnableEditUsername(true)
                                     }}>{enableEditUsername ? <CheckIcon /> : <EditIcon />}</Fab>
                                 </Box>
+
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    Change E-Mail:
-                                    <TextField disabled={!enableEditUsername} />
-                                    <Fab onClick={() => enableEditUsername ? false : true}><EditIcon /></Fab>
+                                    Change Email:
+                                    <TextField autoComplete="off" disabled={!enableEditEmail} value={editEmail} onChange={(e) => {
+                                        setEditEmail(e.target.value)
+                                    }} />
+                                    <Fab onClick={() => {
+                                        if (enableEditEmail) {
+                                            setEnableEditEmail(false)
+                                            fetch(`${backend}/users/${loggedInUser}/edit/email`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ send: editEmail })
+                                            })
+                                                .then(async res => {
+                                                    const data = await res.json()
+                                                    if (!res.ok) {
+
+                                                        fetch(`${backend}/users/${loggedInUser}/email`)
+                                                            .then(async res => {
+                                                                const data = await res.json()
+                                                                if (!res.ok) {
+                                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                    return null
+                                                                }
+                                                                return data
+                                                            })
+                                                            .then(data => {
+                                                                if (data) {
+                                                                    setEditEmail(data)
+                                                                }
+                                                            })
+                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                        return null
+                                                    }
+                                                    return data
+                                                })
+                                                .then(data => {
+                                                    if (data) {
+                                                        console.log(data)
+                                                        alert("Email wurde erfolgreich geändert!")
+                                                    }
+                                                })
+                                        } else setEnableEditEmail(true)
+                                    }}>{enableEditEmail ? <CheckIcon /> : <EditIcon />}</Fab>
                                 </Box>
+
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    Change Password:
+                                    <TextField autoComplete="off" type="text" label="Altes Passwort" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
+                                    <TextField autoComplete="off" type="text" label="Neues Passwort" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                    <TextField autoComplete="off" type="text" label="Neues Passwort wiederholen" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} />
+                                    {oldPassword !== "" || password !== "" || repeatPassword !== "" ? <>
+                                        <Fab onClick={() => {
+                                            if (oldPassword.trim() !== "" && password.trim() !== "" && repeatPassword.trim() !== "") {
+                                                const passwords = { oldPassword, password, repeatPassword }
+                                                fetch(`${backend}/users/${loggedInUser}/edit/password`, {
+                                                    method: 'PUT',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify(passwords)
+                                                })
+                                                    .then(async res => {
+                                                        const data = await res.json()
+                                                        if (!res.ok) {
+                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                            setRepeatPassword("")
+                                                            return null
+                                                        }
+                                                        return data
+                                                    })
+                                                    .then(data => {
+                                                        if (data) {
+                                                            console.log(data)
+                                                            alert(data.message)
+                                                            setOldPassword("")
+                                                            setPassword("")
+                                                            setRepeatPassword("")
+                                                        }
+                                                    })
+                                            } else alert("Bitte gebe in alle drei Feler etwas ein!")
+                                        }}><CheckIcon /></Fab>
+                                    </> : ""}
+                                </Box>
+
                                 <Fab onClick={() => {
                                     setEdit(false)
                                 }}><ArrowBackIosIcon />
