@@ -14,7 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
 import EditIcon from '@mui/icons-material/Edit';
-
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 interface serie {
     serie: string,
@@ -63,7 +63,10 @@ export default function Website() {
     const [filterFavorit, setFilterFavorit] = useState(false)
     const [filterSterne, setFilterSterne] = useState(0)
 
-
+    //Variablen für Edit Menü
+    const [edit, setEdit] = useState(false)
+    const [enableEditUsername, setEnableEditUsername] = useState(false)
+    const [editUsername, setEditUsername] = useState("")
 
     useEffect(() => {
         if (loggedIn) {
@@ -180,333 +183,375 @@ export default function Website() {
                     )}
                 </>
             ) : (
-                <> {/* Netflix Liste */}
-                    <> {/* Benutzer Menü */}
-                        <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                            <Fab variant="extended" onClick={() => { userMenu ? setUserMenu(false) : setUserMenu(true) }}><b>{loggedInUser}</b></Fab>
-                            {userMenu ?
-                                <><Fab size="small" sx={{ backgroundColor: "red" }} onClick={() => {
-                                    setLoggedInUser("")
-                                    setLoggedIn(false)
-                                }}><LogoutIcon /></Fab>
-                                </>
-                                : ""}
-                        </Box>
-                        <br /><br /><br />
-                    </>
+                <>
+                    {!edit ? ( //Netflix-Liste
+                        <>
+                            <> {/* Benutzer Menü */}
+                                <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                                    <Fab variant="extended" onClick={() => { userMenu ? setUserMenu(false) : setUserMenu(true) }}><b>{loggedInUser}</b></Fab>
+                                    {userMenu ?
+                                        <>
+                                            <Fab size="small" onClick={() => {
+                                                setEdit(true)
+                                                setEnableEditUsername(false)
+                                                setEditUsername(loggedInUser)
+                                            }}>
+                                                <EditIcon />
+                                            </Fab>
+                                            <Fab size="small" sx={{ backgroundColor: "red" }} onClick={() => {
+                                                setLoggedInUser("")
+                                                setLoggedIn(false)
+                                            }}><LogoutIcon /></Fab>
+                                        </>
+                                        : ""}
+                                </Box>
+                                <br /><br /><br />
+                            </>
 
-                    <> {/* Serie hinzufügen */}
-                        <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                            <TextField label="Name der Serie" variant="outlined" type="text" value={serie} onChange={(e) => setSerie(e.target.value)} />
-                            <TextField label="Kategorie (optional)" variant="outlined" type="text" value={kategorie} onChange={(e) => setKategorie(e.target.value)} />
+                            <> {/* Serie hinzufügen */}
+                                <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                                    <TextField label="Name der Serie" variant="outlined" type="text" value={serie} onChange={(e) => setSerie(e.target.value)} />
+                                    <TextField label="Kategorie (optional)" variant="outlined" type="text" value={kategorie} onChange={(e) => setKategorie(e.target.value)} />
 
-                            <Fab sx={{ backgroundColor: "lime" }} onClick={() => {
-                                const newSerie = { serie, kategorie: kategorie.trim() === "" ? "" : kategorie }
-                                fetch(`${backend}/users/${loggedInUser}/items`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(newSerie)
-                                })
-                                    .then(async res => {
-                                        const data = await res.json()
-                                        if (!res.ok) {
-                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                            return null
-                                        }
-                                        return data
-                                    })
-                                    .then(data => {
-                                        setSerie("")
-                                        setKategorie("")
-                                        if (data) setListe(data)
-                                    })
-                            }}><AddIcon /></Fab>
-                        </Box>
-                    </>
+                                    <Fab sx={{ backgroundColor: "lime" }} onClick={() => {
+                                        const newSerie = { serie, kategorie: kategorie.trim() === "" ? "" : kategorie }
+                                        fetch(`${backend}/users/${loggedInUser}/items`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(newSerie)
+                                        })
+                                            .then(async res => {
+                                                const data = await res.json()
+                                                if (!res.ok) {
+                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                    return null
+                                                }
+                                                return data
+                                            })
+                                            .then(data => {
+                                                setSerie("")
+                                                setKategorie("")
+                                                if (data) setListe(data)
+                                            })
+                                    }}><AddIcon /></Fab>
+                                </Box>
+                            </>
 
-                    <br /><br /><br />
+                            <br /><br /><br />
 
-                    <> {/* Filter */}
-                        <Box sx={{ '& > :not(style)': { m: 1 } }}>
-                            <Fab onClick={() => {
-                                if (enableFilter) {
-                                    setEnableFilter(false)
-                                    setFilterSerie("")
-                                    setFilterKategorie("")
-                                    setFilterStatus("")
-                                    setFilterFavorit(false)
-                                    setFilterSterne(0)
-                                } else setEnableFilter(true)
-                            }}>{enableFilter ? <FilterAltIcon /> : <FilterAltOffIcon />}</Fab>
-                            {enableFilter ?
-                                <>
-                                    <TextField variant="outlined" type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)} />
-                                    <TextField variant="outlined" type="text" placeholder="Filter nach Kategorie" value={filterKategorie} onChange={(e) => setFilterKategorie(e.target.value)} />
-                                    <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
-                                    <Fab variant="extended">
-                                        <Box sx={{ '& > :not(style)': { m: 0.35 } }}>
-                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 1 ? "yellow" : "default" }} onClick={() => { filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1) }}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 2 ? "yellow" : "default" }} onClick={() => { filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2) }}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 3 ? "yellow" : "default" }} onClick={() => { filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3) }}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 4 ? "yellow" : "default" }} onClick={() => { filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4) }}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                            <Fab size="small" sx={{ backgroundColor: filterSterne >= 5 ? "yellow" : "default" }} onClick={() => { filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5) }}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-                                        </Box>
-                                    </Fab>
-                                    <Fab sx={{ backgroundColor: filterFavorit ? "red" : "default" }} onClick={() => { filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true) }}>{filterFavorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}</Fab>
-                                    <br /><br />
-                                    <b>Aktuelle Filter:&nbsp;</b> <br />
-                                    {filterSerie !== "" ? "-> Serie enthält: " + filterSerie : ""}{filterSerie !== "" ? <br /> : ""}
-                                    {filterKategorie !== "" ? "-> Kategorie enthält: " + filterKategorie : ""}{filterKategorie !== "" ? <br /> : ""}
-                                    {filterStatus === "unwatched" ? "-> Status: Nicht Geschaut" : filterStatus === "watched" ? "-> Status: Geschaut" : ""}{filterStatus !== "" ? <br /> : ""}
-                                    {filterSterne > 1 ? "-> Bewertet mit  " + filterSterne + " Sternen" : filterSterne === 1 ? "-> Bewertet mit 1 Stern" : ""}{filterKategorie !== "" ? <br /> : ""}
-                                    {filterFavorit ? " -> Nur Favoriten" : ""}{filterKategorie !== "" ? <br /> : ""}
-                                </>
-                                : ""}
-                        </Box>
-                    </>
-
-                    <br /><br /><br />
-
-                    <> {/* Liste der Serien */}
-                        {liste.length > 0 ?
-                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: "#dac5c5ff", textAlign: "center", padding: "8px", border: '2px solid black' }}>
-                                        <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Favorit</td>
-                                        <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Name der Serie</td>
-                                        <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Kategorie</td>
-                                        <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Bewertung</td>
-                                        <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Status</td>
-                                        <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Löschen</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).filter(item => filterSterne !== 0 ? item.sterne === filterSterne : true).map((item, index) => (
-                                        <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white" }}>
-                                            <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Favorit*/}
-                                                <Fab sx={{ backgroundColor: item.favorit ? "red" : "default" }} onClick={() => {
-                                                    fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/favorit/0`, {
-                                                        method: 'PUT',
-                                                        headers: { 'Content-Type': 'application/json' },
-                                                    })
-                                                        .then(async res => {
-                                                            const data = await res.json()
-                                                            if (!res.ok) {
-                                                                alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                return null
-                                                            }
-                                                            return data
-                                                        })
-                                                        .then(data => { if (data) setListe(data) })
-                                                }}>
-                                                    {item.favorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                                                </Fab>
-                                            </td>
-                                            <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Serie*/}
-                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                                                    <div style={{ flex: 1, textAlign: "center" }}>
-                                                        {updateSerie.findIndex(data => data.id === item.id) === -1 ? item.serie :
-                                                            <TextField type="text" value={updateSerie.find(data => data.id === item.id)?.text} onChange={(e) => {
-                                                                setUpdateSerie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
-                                                            }} />}
-                                                    </div>
-                                                    <Fab size="small" onClick={() => {
-                                                        const findUpdate = updateSerie.findIndex(data => data.id === item.id)
-                                                        if (findUpdate === -1) {
-                                                            const neuesUpdate = { text: item.serie, id: item.id }
-                                                            setUpdateSerie([...updateSerie, neuesUpdate])
-                                                            console.log("Update created!")
-                                                        } else if (findUpdate !== -1) {
-                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/serie/0`, {
-                                                                method: 'PUT',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                body: JSON.stringify({ text: updateSerie[findUpdate].text })
-                                                            })
-                                                                .then(async res => {
-                                                                    const data = await res.json()
-                                                                    if (!res.ok) {
-                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                        return null
-                                                                    }
-                                                                    return data
-                                                                })
-                                                                .then(data => {
-                                                                    if (data) {
-                                                                        setUpdateSerie(prev => prev.filter(got => got.id !== item.id))
-                                                                        setListe(prev => prev.map(got => got.id === item.id ? { ...got, serie: updateSerie[findUpdate].text } : got))
-                                                                    }
-                                                                })
-                                                            console.log("Update found!")
-                                                        }
-                                                    }}>{updateSerie.findIndex(data => data.id === item.id) === -1 ? <EditIcon /> : <CheckIcon />}</Fab>
-                                                </div>
-                                            </td>
-                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Kategorie*/}
-                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                                                    <div style={{ flex: 1, textAlign: "center" }}>
-                                                        {updateKategorie.findIndex(data => data.id === item.id) === -1 ? item.kategorie :
-                                                            <TextField type="text" value={updateKategorie.find(data => data.id === item.id)?.text} onChange={(e) => {
-                                                                setUpdateKategorie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
-                                                            }} />}
-                                                    </div>
-                                                    <Fab size="small" onClick={() => {
-                                                        const findUpdate = updateKategorie.findIndex(data => data.id === item.id)
-                                                        if (findUpdate === -1) {
-                                                            const neuesUpdate = { text: item.kategorie, id: item.id }
-                                                            setUpdateKategorie([...updateKategorie, neuesUpdate])
-                                                            console.log("Update created!")
-                                                        } else if (findUpdate !== -1) {
-                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/kategorie/0`, {
-                                                                method: 'PUT',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                body: JSON.stringify({ text: updateKategorie[findUpdate].text })
-                                                            })
-                                                                .then(async res => {
-                                                                    const data = await res.json()
-                                                                    if (!res.ok) {
-                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                        return null
-                                                                    }
-                                                                    return data
-                                                                })
-                                                                .then(data => {
-                                                                    if (data) {
-                                                                        setUpdateKategorie(prev => prev.filter(got => got.id !== item.id))
-                                                                        setListe(prev => prev.map(got => got.id === item.id ? { ...got, kategorie: updateKategorie[findUpdate].text } : got))
-                                                                    }
-                                                                })
-                                                            console.log("Update found!")
-                                                        }
-                                                    }}>{updateKategorie.findIndex(data => data.id === item.id) === -1 ? <EditIcon /> : <CheckIcon />}</Fab>
-                                                </div>
-                                            </td> {/* Kategorie*/}
-                                            <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Sterne (Bewertung)*/}
-                                                <Box sx={{ '& > :not(style)': { m: 0.25 } }}>
-                                                    <Fab sx={{ backgroundColor: item.sterne >= 1 ? "yellow" : "default" }} size="small" onClick={() => {
-                                                        fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/1`, {
-                                                            method: 'PUT',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                        })
-                                                            .then(async res => {
-                                                                const data = await res.json()
-                                                                if (!res.ok) {
-                                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                    return null
-                                                                }
-                                                                return data
-                                                            })
-                                                            .then(data => { if (data) setListe(data) })
-                                                    }}>{item.sterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-
-                                                    <Fab sx={{ backgroundColor: item.sterne >= 2 ? "yellow" : "default" }} size="small" onClick={() => {
-                                                        fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/2`, {
-                                                            method: 'PUT',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                        })
-                                                            .then(async res => {
-                                                                const data = await res.json()
-                                                                if (!res.ok) {
-                                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                    return null
-                                                                }
-                                                                return data
-                                                            })
-                                                            .then(data => { if (data) setListe(data) })
-                                                    }}>{item.sterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-
-                                                    <Fab sx={{ backgroundColor: item.sterne >= 3 ? "yellow" : "default" }} size="small" onClick={() => {
-                                                        fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/3`, {
-                                                            method: 'PUT',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                        })
-                                                            .then(async res => {
-                                                                const data = await res.json()
-                                                                if (!res.ok) {
-                                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                    return null
-                                                                }
-                                                                return data
-                                                            })
-                                                            .then(data => { if (data) setListe(data) })
-                                                    }}>{item.sterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-
-                                                    <Fab sx={{ backgroundColor: item.sterne >= 4 ? "yellow" : "default" }} size="small" onClick={() => {
-                                                        fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/4`, {
-                                                            method: 'PUT',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                        })
-                                                            .then(async res => {
-                                                                const data = await res.json()
-                                                                if (!res.ok) {
-                                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                    return null
-                                                                }
-                                                                return data
-                                                            })
-                                                            .then(data => { if (data) setListe(data) })
-                                                    }}>{item.sterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
-
-                                                    <Fab sx={{ backgroundColor: item.sterne >= 5 ? "yellow" : "default" }} size="small" onClick={() => {
-                                                        fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/5`, {
-                                                            method: 'PUT',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                        })
-                                                            .then(async res => {
-                                                                const data = await res.json()
-                                                                if (!res.ok) {
-                                                                    alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                    return null
-                                                                }
-                                                                return data
-                                                            })
-                                                            .then(data => { if (data) setListe(data) })
-                                                    }}>{item.sterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                            <> {/* Filter */}
+                                <Box sx={{ '& > :not(style)': { m: 1 } }}>
+                                    <Fab onClick={() => {
+                                        if (enableFilter) {
+                                            setEnableFilter(false)
+                                            setFilterSerie("")
+                                            setFilterKategorie("")
+                                            setFilterStatus("")
+                                            setFilterFavorit(false)
+                                            setFilterSterne(0)
+                                        } else setEnableFilter(true)
+                                    }}>{enableFilter ? <FilterAltIcon /> : <FilterAltOffIcon />}</Fab>
+                                    {enableFilter ?
+                                        <>
+                                            <TextField variant="outlined" type="text" placeholder="Filter nach Serie" value={filterSerie} onChange={(e) => setFilterSerie(e.target.value)} />
+                                            <TextField variant="outlined" type="text" placeholder="Filter nach Kategorie" value={filterKategorie} onChange={(e) => setFilterKategorie(e.target.value)} />
+                                            <Fab variant="extended" onClick={() => { filterStatus === "unwatched" ? setFilterStatus("watched") : filterStatus === "watched" ? setFilterStatus("") : setFilterStatus("unwatched") }}><b>Status: &nbsp;</b> {filterStatus === "" ? "Alle" : filterStatus === "unwatched" ? "Nicht Geschaut" : "Geschaut"}</Fab>
+                                            <Fab variant="extended">
+                                                <Box sx={{ '& > :not(style)': { m: 0.35 } }}>
+                                                    <Fab size="small" sx={{ backgroundColor: filterSterne >= 1 ? "yellow" : "default" }} onClick={() => { filterSterne === 1 ? setFilterSterne(0) : setFilterSterne(1) }}>{filterSterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                                    <Fab size="small" sx={{ backgroundColor: filterSterne >= 2 ? "yellow" : "default" }} onClick={() => { filterSterne === 2 ? setFilterSterne(0) : setFilterSterne(2) }}>{filterSterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                                    <Fab size="small" sx={{ backgroundColor: filterSterne >= 3 ? "yellow" : "default" }} onClick={() => { filterSterne === 3 ? setFilterSterne(0) : setFilterSterne(3) }}>{filterSterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                                    <Fab size="small" sx={{ backgroundColor: filterSterne >= 4 ? "yellow" : "default" }} onClick={() => { filterSterne === 4 ? setFilterSterne(0) : setFilterSterne(4) }}>{filterSterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                                    <Fab size="small" sx={{ backgroundColor: filterSterne >= 5 ? "yellow" : "default" }} onClick={() => { filterSterne === 5 ? setFilterSterne(0) : setFilterSterne(5) }}>{filterSterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
                                                 </Box>
-                                            </td>
-                                            <td style={{ width: "10%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Status*/}
-                                                <Fab sx={{ backgroundColor: item.status === "watched" ? "lime" : "default" }} variant="extended" onClick={() => {
-                                                    fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/status/0`, {
-                                                        method: 'PUT',
-                                                        headers: { 'Content-Type': 'application/json' },
-                                                    })
-                                                        .then(async res => {
-                                                            const data = await res.json()
-                                                            if (!res.ok) {
-                                                                alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                return null
-                                                            }
-                                                            return data
-                                                        })
-                                                        .then(data => { if (data) setListe(data) })
-                                                }}>
-                                                    {item.status === "watched" ? "Geschaut" : "Nicht Geschaut"}
-                                                </Fab>
-                                            </td>
-                                            <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Löschen*/}
-                                                <Fab sx={{ backgroundColor: "red" }} onClick={() => {
-                                                    fetch(`${backend}/users/${loggedInUser}/items/${item.id}/delete`, {
-                                                        method: 'DELETE',
-                                                        headers: { 'Content-Type': 'application/json' },
-                                                    })
-                                                        .then(async res => {
-                                                            const data = await res.json()
-                                                            if (!res.ok) {
-                                                                alert("Es ist ein Fehler aufgetreten: " + data.message)
-                                                                return null
-                                                            }
-                                                            return data
-                                                        })
-                                                        .then(data => { if (data) setListe(data) })
-                                                }}>
-                                                    <DeleteIcon />
-                                                </Fab>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            : ""}
-                    </>
+                                            </Fab>
+                                            <Fab sx={{ backgroundColor: filterFavorit ? "red" : "default" }} onClick={() => { filterFavorit ? setFilterFavorit(false) : setFilterFavorit(true) }}>{filterFavorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}</Fab>
+                                            <br /><br />
+                                            <b>Aktuelle Filter:&nbsp;</b> <br />
+                                            {filterSerie !== "" ? "-> Serie enthält: " + filterSerie : ""}{filterSerie !== "" ? <br /> : ""}
+                                            {filterKategorie !== "" ? "-> Kategorie enthält: " + filterKategorie : ""}{filterKategorie !== "" ? <br /> : ""}
+                                            {filterStatus === "unwatched" ? "-> Status: Nicht Geschaut" : filterStatus === "watched" ? "-> Status: Geschaut" : ""}{filterStatus !== "" ? <br /> : ""}
+                                            {filterSterne > 1 ? "-> Bewertet mit  " + filterSterne + " Sternen" : filterSterne === 1 ? "-> Bewertet mit 1 Stern" : ""}{filterKategorie !== "" ? <br /> : ""}
+                                            {filterFavorit ? " -> Nur Favoriten" : ""}{filterKategorie !== "" ? <br /> : ""}
+                                        </>
+                                        : ""}
+                                </Box>
+                            </>
+
+                            <br /><br /><br />
+
+                            <> {/* Liste der Serien */}
+                                {liste.length > 0 ?
+                                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: "#dac5c5ff", textAlign: "center", padding: "8px", border: '2px solid black' }}>
+                                                <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Favorit</td>
+                                                <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Name der Serie</td>
+                                                <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Kategorie</td>
+                                                <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Bewertung</td>
+                                                <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Status</td>
+                                                <td style={{ textAlign: "center", padding: "8px", border: '2px solid black' }}>Löschen</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {liste.filter(item => item.serie.includes(filterSerie)).filter(item => item.kategorie.includes(filterKategorie)).filter(item => filterFavorit ? item.favorit : true).filter(item => filterStatus === "" ? true : item.status === filterStatus).filter(item => filterSterne !== 0 ? item.sterne === filterSterne : true).map((item, index) => (
+                                                <tr key={item.id} style={{ backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white" }}>
+                                                    <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Favorit*/}
+                                                        <Fab sx={{ backgroundColor: item.favorit ? "red" : "default" }} onClick={() => {
+                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/favorit/0`, {
+                                                                method: 'PUT',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                            })
+                                                                .then(async res => {
+                                                                    const data = await res.json()
+                                                                    if (!res.ok) {
+                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                        return null
+                                                                    }
+                                                                    return data
+                                                                })
+                                                                .then(data => { if (data) setListe(data) })
+                                                        }}>
+                                                            {item.favorit ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                                                        </Fab>
+                                                    </td>
+                                                    <td style={{ textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Serie*/}
+                                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                                                            <div style={{ flex: 1, textAlign: "center" }}>
+                                                                {updateSerie.findIndex(data => data.id === item.id) === -1 ? item.serie :
+                                                                    <TextField type="text" value={updateSerie.find(data => data.id === item.id)?.text} onChange={(e) => {
+                                                                        setUpdateSerie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
+                                                                    }} />}
+                                                            </div>
+                                                            <Fab size="small" onClick={() => {
+                                                                const findUpdate = updateSerie.findIndex(data => data.id === item.id)
+                                                                if (findUpdate === -1) {
+                                                                    const neuesUpdate = { text: item.serie, id: item.id }
+                                                                    setUpdateSerie([...updateSerie, neuesUpdate])
+                                                                    console.log("Update created!")
+                                                                } else if (findUpdate !== -1) {
+                                                                    fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/serie/0`, {
+                                                                        method: 'PUT',
+                                                                        headers: { 'Content-Type': 'application/json' },
+                                                                        body: JSON.stringify({ text: updateSerie[findUpdate].text })
+                                                                    })
+                                                                        .then(async res => {
+                                                                            const data = await res.json()
+                                                                            if (!res.ok) {
+                                                                                alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                                return null
+                                                                            }
+                                                                            return data
+                                                                        })
+                                                                        .then(data => {
+                                                                            if (data) {
+                                                                                setUpdateSerie(prev => prev.filter(got => got.id !== item.id))
+                                                                                setListe(prev => prev.map(got => got.id === item.id ? { ...got, serie: updateSerie[findUpdate].text } : got))
+                                                                            }
+                                                                        })
+                                                                    console.log("Update found!")
+                                                                }
+                                                            }}>{updateSerie.findIndex(data => data.id === item.id) === -1 ? <EditIcon /> : <CheckIcon />}</Fab>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Kategorie*/}
+                                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                                                            <div style={{ flex: 1, textAlign: "center" }}>
+                                                                {updateKategorie.findIndex(data => data.id === item.id) === -1 ? item.kategorie :
+                                                                    <TextField type="text" value={updateKategorie.find(data => data.id === item.id)?.text} onChange={(e) => {
+                                                                        setUpdateKategorie(prev => prev.map(data => data.id === item.id ? { ...data, text: e.target.value } : data))
+                                                                    }} />}
+                                                            </div>
+                                                            <Fab size="small" onClick={() => {
+                                                                const findUpdate = updateKategorie.findIndex(data => data.id === item.id)
+                                                                if (findUpdate === -1) {
+                                                                    const neuesUpdate = { text: item.kategorie, id: item.id }
+                                                                    setUpdateKategorie([...updateKategorie, neuesUpdate])
+                                                                    console.log("Update created!")
+                                                                } else if (findUpdate !== -1) {
+                                                                    fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/kategorie/0`, {
+                                                                        method: 'PUT',
+                                                                        headers: { 'Content-Type': 'application/json' },
+                                                                        body: JSON.stringify({ text: updateKategorie[findUpdate].text })
+                                                                    })
+                                                                        .then(async res => {
+                                                                            const data = await res.json()
+                                                                            if (!res.ok) {
+                                                                                alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                                return null
+                                                                            }
+                                                                            return data
+                                                                        })
+                                                                        .then(data => {
+                                                                            if (data) {
+                                                                                setUpdateKategorie(prev => prev.filter(got => got.id !== item.id))
+                                                                                setListe(prev => prev.map(got => got.id === item.id ? { ...got, kategorie: updateKategorie[findUpdate].text } : got))
+                                                                            }
+                                                                        })
+                                                                    console.log("Update found!")
+                                                                }
+                                                            }}>{updateKategorie.findIndex(data => data.id === item.id) === -1 ? <EditIcon /> : <CheckIcon />}</Fab>
+                                                        </div>
+                                                    </td> {/* Kategorie*/}
+                                                    <td style={{ width: "15%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Sterne (Bewertung)*/}
+                                                        <Box sx={{ '& > :not(style)': { m: 0.25 } }}>
+                                                            <Fab sx={{ backgroundColor: item.sterne >= 1 ? "yellow" : "default" }} size="small" onClick={() => {
+                                                                fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/1`, {
+                                                                    method: 'PUT',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                })
+                                                                    .then(async res => {
+                                                                        const data = await res.json()
+                                                                        if (!res.ok) {
+                                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                            return null
+                                                                        }
+                                                                        return data
+                                                                    })
+                                                                    .then(data => { if (data) setListe(data) })
+                                                            }}>{item.sterne >= 1 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+
+                                                            <Fab sx={{ backgroundColor: item.sterne >= 2 ? "yellow" : "default" }} size="small" onClick={() => {
+                                                                fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/2`, {
+                                                                    method: 'PUT',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                })
+                                                                    .then(async res => {
+                                                                        const data = await res.json()
+                                                                        if (!res.ok) {
+                                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                            return null
+                                                                        }
+                                                                        return data
+                                                                    })
+                                                                    .then(data => { if (data) setListe(data) })
+                                                            }}>{item.sterne >= 2 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+
+                                                            <Fab sx={{ backgroundColor: item.sterne >= 3 ? "yellow" : "default" }} size="small" onClick={() => {
+                                                                fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/3`, {
+                                                                    method: 'PUT',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                })
+                                                                    .then(async res => {
+                                                                        const data = await res.json()
+                                                                        if (!res.ok) {
+                                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                            return null
+                                                                        }
+                                                                        return data
+                                                                    })
+                                                                    .then(data => { if (data) setListe(data) })
+                                                            }}>{item.sterne >= 3 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+
+                                                            <Fab sx={{ backgroundColor: item.sterne >= 4 ? "yellow" : "default" }} size="small" onClick={() => {
+                                                                fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/4`, {
+                                                                    method: 'PUT',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                })
+                                                                    .then(async res => {
+                                                                        const data = await res.json()
+                                                                        if (!res.ok) {
+                                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                            return null
+                                                                        }
+                                                                        return data
+                                                                    })
+                                                                    .then(data => { if (data) setListe(data) })
+                                                            }}>{item.sterne >= 4 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+
+                                                            <Fab sx={{ backgroundColor: item.sterne >= 5 ? "yellow" : "default" }} size="small" onClick={() => {
+                                                                fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/sterne/5`, {
+                                                                    method: 'PUT',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                })
+                                                                    .then(async res => {
+                                                                        const data = await res.json()
+                                                                        if (!res.ok) {
+                                                                            alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                            return null
+                                                                        }
+                                                                        return data
+                                                                    })
+                                                                    .then(data => { if (data) setListe(data) })
+                                                            }}>{item.sterne >= 5 ? <StarIcon /> : <StarBorderIcon />}</Fab>
+                                                        </Box>
+                                                    </td>
+                                                    <td style={{ width: "10%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Status*/}
+                                                        <Fab sx={{ backgroundColor: item.status === "watched" ? "lime" : "default" }} variant="extended" onClick={() => {
+                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/update/status/0`, {
+                                                                method: 'PUT',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                            })
+                                                                .then(async res => {
+                                                                    const data = await res.json()
+                                                                    if (!res.ok) {
+                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                        return null
+                                                                    }
+                                                                    return data
+                                                                })
+                                                                .then(data => { if (data) setListe(data) })
+                                                        }}>
+                                                            {item.status === "watched" ? "Geschaut" : "Nicht Geschaut"}
+                                                        </Fab>
+                                                    </td>
+                                                    <td style={{ width: "5%", textAlign: "center", padding: "8px", border: '1px solid black' }}> {/* Löschen*/}
+                                                        <Fab sx={{ backgroundColor: "red" }} onClick={() => {
+                                                            fetch(`${backend}/users/${loggedInUser}/items/${item.id}/delete`, {
+                                                                method: 'DELETE',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                            })
+                                                                .then(async res => {
+                                                                    const data = await res.json()
+                                                                    if (!res.ok) {
+                                                                        alert("Es ist ein Fehler aufgetreten: " + data.message)
+                                                                        return null
+                                                                    }
+                                                                    return data
+                                                                })
+                                                                .then(data => { if (data) setListe(data) })
+                                                        }}>
+                                                            <DeleteIcon />
+                                                        </Fab>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    : ""}
+                            </>
+                        </>
+                    ) : ( //Edit-Screen
+                        <>
+                            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', '& > :not(style)': { m: 1 } }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                    Change Username:
+                                    <TextField disabled={!enableEditUsername} value={editUsername} onChange={(e) => {
+                                        setEditUsername(e.target.value)
+                                    }}/>
+                                    <Fab onClick={() => {
+                                        if (enableEditUsername) {
+                                            setEnableEditUsername(false)
+                                            fetch(`${backend}/users/${loggedInUser}/edit/username`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify(setEditUsername)
+                                            })
+                                        } else setEnableEditUsername(true)
+                                    }}>{enableEditUsername ? <CheckIcon /> : <EditIcon />}</Fab>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    Change E-Mail:
+                                    <TextField disabled={!enableEditUsername} />
+                                    <Fab onClick={() => enableEditUsername ? false : true}><EditIcon /></Fab>
+                                </Box>
+                                <Fab onClick={() => {
+                                    setEdit(false)
+                                }}><ArrowBackIosIcon />
+                                </Fab>
+                            </Box>
+                        </>
+                    )}
                 </>
             )}
         </div>

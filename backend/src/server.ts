@@ -182,6 +182,17 @@ app.delete('/users/:user/items/:id/delete', (req, res) => {
     return res.status(200).json(userListe)
 })
 
+app.put('/users/:user/edit/:what', (req, res) => {
+    const user = req.params.user
+    const what = req.params.what
+
+    if (what === "username") {
+        
+    } else if (what === "email") {
+
+    }
+})
+
 app.listen(port, () => {
     console.log(`Server hostet on Port ${port}`)
 })
