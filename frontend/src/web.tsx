@@ -32,7 +32,7 @@ interface update {
 
 export default function Website() {
     //Variablen für das Backend
-    const backend = "http://192.168.178.108:3001" //WICHTIG! BACKEND LINK ÜBERPRÜFEN!!
+    const backend = "http://localhost:3001" //WICHTIG! BACKEND LINK ÜBERPRÜFEN!!
 
     //Variablen die die Seite
     const [panel, setPanel] = useState("login")
